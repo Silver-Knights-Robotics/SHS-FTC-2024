@@ -33,6 +33,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /*
@@ -64,7 +66,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @TeleOp(name="Basic: Omni Linear OpMode", group="Linear OpMode")
-@Disabled
+//@Disabled
 public class basic_drive_code extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
@@ -73,16 +75,28 @@ public class basic_drive_code extends LinearOpMode {
     private DcMotor leftBackDrive = null;
     private DcMotor rightFrontDrive = null;
     private DcMotor rightBackDrive = null;
+    private DcMotor rotate1 = null;
+    private DcMotor rotate2 = null;
+    private DcMotor armUp = null;
+    private Servo wrist = null;
+    private Servo claw = null;
 
     @Override
     public void runOpMode() {
 
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
-        leftFrontDrive  = hardwareMap.get(DcMotor.class, "left_front_drive");
-        leftBackDrive  = hardwareMap.get(DcMotor.class, "left_back_drive");
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
-        rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
+        leftFrontDrive  = hardwareMap.get(DcMotor.class, "white");
+        leftBackDrive  = hardwareMap.get(DcMotor.class, "yellow");
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "blue");
+        rightBackDrive = hardwareMap.get(DcMotor.class, "black");
+
+        rotate1 = hardwareMap.get(DcMotor.class, "rotate1");
+        rotate2 = hardwareMap.get(DcMotor.class, "rotate2");
+        armUp = hardwareMap.get(DcMotor.class, "armUp");
+
+        wrist = hardwareMap.get(Servo.class, "wrist");
+        claw = hardwareMap.get(Servo.class, "claw");
 
         // ########################################################################################
         // !!!            IMPORTANT Drive Information. Test your motor directions.            !!!!!
@@ -94,10 +108,18 @@ public class basic_drive_code extends LinearOpMode {
         // when you first test your robot, push the left joystick forward and observe the direction the wheels turn.
         // Reverse the direction (flip FORWARD <-> REVERSE ) of any wheel that runs backward
         // Keep testing until ALL the wheels move the robot forward when you push the left joystick forward.
-        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        rotate1.setDirection(DcMotor.Direction.FORWARD);
+        rotate2.setDirection(DcMotor.Direction.REVERSE);
+        armUp.setDirection(DcMotor.Direction.FORWARD);
+
+        rotate1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rotate2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armUp.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -151,6 +173,48 @@ public class basic_drive_code extends LinearOpMode {
             rightFrontPower = gamepad1.y ? 1.0 : 0.0;  // Y gamepad
             rightBackPower  = gamepad1.b ? 1.0 : 0.0;  // B gamepad
             */
+
+            // gamepad2 left joystick y rotate
+            // gamepad2 right joystick y up
+
+            double rotate = gamepad2.left_stick_y;
+            double up = -gamepad2.right_stick_y;
+
+            rotate1.setPower(rotate*0.4);
+            rotate2.setPower(rotate*0.4);
+            armUp.setPower(up);
+
+            // Wrist: left trigger down, left bumper up
+
+            if (gamepad2.left_bumper && wrist.getPosition() >= 0.3044){
+                wrist.setPosition(wrist.getPosition() - 0.001);
+            }
+            else{
+                wrist.setPosition(wrist.getPosition());
+            }
+            if (gamepad2.left_trigger != 0){
+                wrist.setPosition(wrist.getPosition() + 0.001);
+            }
+            else{
+                wrist.setPosition(wrist.getPosition());
+            }
+
+            // Claw: right bumper opens, right trigger closes
+            if (gamepad2.right_bumper && claw.getPosition() >= 0.0744){
+                claw.setPosition(claw.getPosition() - 0.003);
+            }
+            else{
+                claw.setPosition(claw.getPosition());
+            }
+            if (gamepad2.right_trigger != 0 && claw.getPosition() < 0.4061){
+                claw.setPosition(claw.getPosition() + 0.003);
+            }
+            else{
+                claw.setPosition(claw.getPosition());
+            }
+
+            telemetry.addData("Wrist Location", wrist.getPosition());
+            telemetry.addData("Claw Location", claw.getPosition());
 
             // Send calculated power to wheels
             leftFrontDrive.setPower(leftFrontPower);
