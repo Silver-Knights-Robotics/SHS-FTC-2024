@@ -185,30 +185,29 @@ public class basic_drive_code extends LinearOpMode {
             // Wrist: left trigger down, left bumper up
 
             if (gamepad2.left_bumper && wrist.getPosition() >= 0.3044){
-                wrist.setPosition(wrist.getPosition() - 0.001);
+                wrist.setPosition(wrist.getPosition() - 0.003);
             }
             else{
                 wrist.setPosition(wrist.getPosition());
             }
             if (gamepad2.left_trigger != 0){
-                wrist.setPosition(wrist.getPosition() + 0.001);
+                wrist.setPosition(wrist.getPosition() + 0.003);
             }
             else{
                 wrist.setPosition(wrist.getPosition());
             }
 
             // Claw: right bumper opens, right trigger closes
-            if (gamepad2.right_bumper && claw.getPosition() >= 0.0744){
-                claw.setPosition(claw.getPosition() - 0.003);
+            if (gamepad2.right_bumper){
+                claw.setPosition(0.0717);
             }
-            else{
-                claw.setPosition(claw.getPosition());
+
+            if (gamepad2.right_trigger != 0){
+                claw.setPosition(0.4061);
             }
-            if (gamepad2.right_trigger != 0 && claw.getPosition() < 0.4061){
-                claw.setPosition(claw.getPosition() + 0.003);
-            }
-            else{
-                claw.setPosition(claw.getPosition());
+
+            if (gamepad2.x){
+                wrist.setPosition(0.6839);
             }
 
             telemetry.addData("Wrist Location", wrist.getPosition());

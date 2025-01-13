@@ -138,6 +138,10 @@ public class SampleMecanumDrive extends MecanumDrive {
         );
     }
 
+//    public String[] getMotorVels(){
+//        return new String[]{leftFront.getVelocity(), leftFront.getVelocity(), rightRear.getVelocity(), rightFront.getVelocity()};
+//    }
+
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
         return new TrajectoryBuilder(startPose, VEL_CONSTRAINT, ACCEL_CONSTRAINT);
     }
