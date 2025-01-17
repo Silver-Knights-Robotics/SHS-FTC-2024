@@ -79,6 +79,10 @@ public class basic_drive_code extends LinearOpMode {
     private Servo wrist = null;
     private Servo claw = null;
 
+    private Boolean open = false;
+
+    private int button = 1;
+
     @Override
     public void runOpMode() {
 
@@ -184,29 +188,42 @@ public class basic_drive_code extends LinearOpMode {
 
             // Wrist: left trigger down, left bumper up
 
-            if (gamepad2.left_bumper && wrist.getPosition() >= 0.3044){
-                wrist.setPosition(wrist.getPosition() - 0.003);
+            if (gamepad2.y && wrist.getPosition() >= 0.3044){
+                wrist.setPosition(wrist.getPosition() - 0.002);
             }
             else{
                 wrist.setPosition(wrist.getPosition());
             }
-            if (gamepad2.left_trigger != 0){
-                wrist.setPosition(wrist.getPosition() + 0.003);
+            if (gamepad2.a){
+                wrist.setPosition(wrist.getPosition() + 0.002);
             }
             else{
                 wrist.setPosition(wrist.getPosition());
             }
 
             // Claw: right bumper opens, right trigger closes
+
+            if (gamepad2.b) {
+                claw.setPosition(0.9294);
+            }
+            if (gamepad2.x) {
+                claw.setPosition(0.5006);
+            }
+//
+////                button = 0;
+//                if (open && claw.getPosition() == 0.5006){
+//                    claw.setPosition(0.9294);
+//                    open = false;
+//                }
+//                else if(!open && claw.getPosition() == 0.9294){
+//                    claw.setPosition(0.5006);
+//                    open = true;
+//                }
+//                button = 1;
+//            }
+        
+
             if (gamepad2.right_bumper){
-                claw.setPosition(0.0717);
-            }
-
-            if (gamepad2.right_trigger != 0){
-                claw.setPosition(0.4061);
-            }
-
-            if (gamepad2.x){
                 wrist.setPosition(0.6839);
             }
 
