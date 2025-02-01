@@ -29,11 +29,16 @@
 
 package org.firstinspires.ftc.teamcode.drive_code;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDriveCancelable;
 
 /*
  * This file contains an example of a Linear "OpMode".
@@ -82,14 +87,17 @@ public class basic_drive_code extends LinearOpMode {
     private Boolean open = false;
 
     private int button = 1;
+    private Boolean newPose = false;
+
+    Pose2d specimenPose = null;
 
     @Override
     public void runOpMode() {
 
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
-        leftFrontDrive  = hardwareMap.get(DcMotor.class, "white");
-        leftBackDrive  = hardwareMap.get(DcMotor.class, "yellow");
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "white");
+        leftBackDrive = hardwareMap.get(DcMotor.class, "yellow");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "blue");
         rightBackDrive = hardwareMap.get(DcMotor.class, "black");
 
@@ -115,6 +123,14 @@ public class basic_drive_code extends LinearOpMode {
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
         rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
+        rotate1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rotate2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armUp.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        rotate1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rotate2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        armUp.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         rotate1.setDirection(DcMotor.Direction.FORWARD);
         rotate2.setDirection(DcMotor.Direction.REVERSE);
         armUp.setDirection(DcMotor.Direction.FORWARD);
@@ -128,30 +144,64 @@ public class basic_drive_code extends LinearOpMode {
         leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-//        wrist.setPosition(1);
+        // ROAD RUNNER THINGS HERE
+        SampleMecanumDriveCancelable drive = new SampleMecanumDriveCancelable(hardwareMap);
+
+        drive.setPoseEstimate(new Pose2d(-24, 64, Math.toRadians(270)));
+
+//        startingWristPosition();
+        wrist.setPosition(0.5);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
         telemetry.update();
+
+//        Pose2d specimenPose = new Pose2d(-47, 54, Math.toRadians(90));
 
         waitForStart();
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+
+//            Pose2d specimenPose;
+
+            //ROAD RUNNER
+
+            if(gamepad1.a){
+                specimenPose = drive.getPoseEstimate();
+                newPose = true;
+            }
+            else
+                if (!newPose) {
+                specimenPose = new Pose2d(-47, 54, Math.toRadians(90));
+            }
+
+            telemetry.addData("Specimen Pose", specimenPose);
+
+            Pose2d myPose = drive.getPoseEstimate();
+            drive.update();
+
+            Trajectory grabSpecimen = drive.trajectoryBuilder(drive.getPoseEstimate())
+//                    .splineTo(new Vector2d(-46.5, 55), Math.toRadians(90))
+                    .lineToLinearHeading(specimenPose)
+                    //open the claw
+                    .addDisplacementMarker(() -> {claw.setPosition(0.5006);})
+                    .build();
+
             double max;
 
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-            double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-            double lateral =  gamepad1.left_stick_x;
-            double yaw     =  gamepad1.right_stick_x;
+            double axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
+            double lateral = gamepad1.left_stick_x;
+            double yaw = gamepad1.right_stick_x;
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
-            double leftFrontPower  = axial + lateral + yaw;
+            double leftFrontPower = axial + lateral + yaw;
             double rightFrontPower = axial - lateral - yaw;
-            double leftBackPower   = axial - lateral + yaw;
-            double rightBackPower  = axial + lateral - yaw;
+            double leftBackPower = axial - lateral + yaw;
+            double rightBackPower = axial + lateral - yaw;
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -160,28 +210,11 @@ public class basic_drive_code extends LinearOpMode {
             max = Math.max(max, Math.abs(rightBackPower));
 
             if (max > 1.0) {
-                leftFrontPower  /= max;
+                leftFrontPower /= max;
                 rightFrontPower /= max;
-                leftBackPower   /= max;
-                rightBackPower  /= max;
+                leftBackPower /= max;
+                rightBackPower /= max;
             }
-
-            // This is test code:
-            //
-            // Uncomment the following code to test your motor directions.
-            // Each button should make the corresponding motor run FORWARD.
-            //   1) First get all the motors to take to correct positions on the robot
-            //      by adjusting your Robot Configuration if necessary.
-            //   2) Then make sure they run in the correct direction by modifying the
-            //      the setDirection() calls above.
-            // Once the correct motors move in the correct direction re-comment this code.
-
-            /*
-            leftFrontPower  = gamepad1.x ? 1.0 : 0.0;  // X gamepad
-            leftBackPower   = gamepad1.a ? 1.0 : 0.0;  // A gamepad
-            rightFrontPower = gamepad1.y ? 1.0 : 0.0;  // Y gamepad
-            rightBackPower  = gamepad1.b ? 1.0 : 0.0;  // B gamepad
-            */
 
             // gamepad2 left joystick y rotate
             // gamepad2 right joystick y up
@@ -189,22 +222,20 @@ public class basic_drive_code extends LinearOpMode {
             double rotate = gamepad2.left_stick_y;
             double up = -gamepad2.right_stick_y;
 
-            rotate1.setPower(rotate*0.4);
-            rotate2.setPower(rotate*0.4);
-            armUp.setPower(up);
+            rotate1.setPower(rotate * 0.4);
+            rotate2.setPower(rotate * 0.4);
+            armUp.setPower(up * 0.6);
 
             // Wrist: left trigger down, left bumper up
 
-            if (gamepad2.y && wrist.getPosition() >= 0.3044){
-                wrist.setPosition(wrist.getPosition() - 0.002);
-            }
-            else{
+            if (gamepad2.y && wrist.getPosition() >= 0.3039) {
+                wrist.setPosition(wrist.getPosition() - 0.012);
+            } else {
                 wrist.setPosition(wrist.getPosition());
             }
-            if (gamepad2.a){
-                wrist.setPosition(wrist.getPosition() + 0.002);
-            }
-            else{
+            if (gamepad2.a && wrist.getPosition() <= 0.7711) {
+                wrist.setPosition(wrist.getPosition() + 0.012);
+            } else {
                 wrist.setPosition(wrist.getPosition());
             }
 
@@ -228,25 +259,48 @@ public class basic_drive_code extends LinearOpMode {
 //                }
 //                button = 1;
 //            }
-        
 
-            if (gamepad2.right_bumper){
+
+            if (gamepad2.right_bumper) {
                 wrist.setPosition(0.6839);
+            }
+
+            //Road Runner Stuff
+
+            if (gamepad1.right_trigger != 0) {
+                drive.followTrajectory(grabSpecimen);
+            }
+
+            if (gamepad1.dpad_down) {
+                drive.breakFollowing();
             }
 
             telemetry.addData("Wrist Location", wrist.getPosition());
             telemetry.addData("Claw Location", claw.getPosition());
 
             // Send calculated power to wheels
-            leftFrontDrive.setPower(leftFrontPower);
-            rightFrontDrive.setPower(rightFrontPower);
-            leftBackDrive.setPower(leftBackPower);
-            rightBackDrive.setPower(rightBackPower);
+            leftFrontDrive.setPower(leftFrontPower * 0.8);
+            rightFrontDrive.setPower(rightFrontPower * 0.8);
+            leftBackDrive.setPower(leftBackPower * 0.8);
+            rightBackDrive.setPower(rightBackPower * 0.8);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", leftFrontPower, rightFrontPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
             telemetry.update();
+
+            //Road Runner Position
+            telemetry.addData("x", myPose.getX());
+            telemetry.addData("y", myPose.getY());
+            telemetry.addData("heading", myPose.getHeading());
+
+            telemetry.addData("rotate1 encoder position", rotate1.getCurrentPosition());
+            telemetry.addData("rotate2 encoder position", rotate2.getCurrentPosition());
+            telemetry.addData("armUp encoder position", armUp.getCurrentPosition());
         }
-    }}
+    }
+    public void startingWristPosition(){
+        wrist.setPosition(1);
+    }
+}
