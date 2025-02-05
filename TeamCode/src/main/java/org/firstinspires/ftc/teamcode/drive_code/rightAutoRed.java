@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDriveCancelable;
 
 /*
@@ -61,17 +62,22 @@ public class rightAutoRed extends LinearOpMode {
         rotate2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         claw.setPosition(0.9289);
-        wrist.setPosition(0.3039);
+        wrist.setPosition(0.2956);
 
         Trajectory traj1 = drive.trajectoryBuilder(startPose)
                 .lineToLinearHeading(new Pose2d(6.5, -33.5, Math.toRadians(270)))
                 .build();
 
-        Trajectory traj2 = drive.trajectoryBuilder(traj1.end())
-                .strafeLeft(31)
+//        Trajectory traj2 = drive.trajectoryBuilder(traj1.end())
+//                .strafeLeft(31)
+//                .build();
+
+        Trajectory splineLeft = drive.trajectoryBuilder(traj1.end())
+                .splineToConstantHeading(new Vector2d(37.5, -36), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(37.5, -33.5), Math.toRadians(270))
                 .build();
 
-        Trajectory block1setup = drive.trajectoryBuilder(traj2.end())
+        Trajectory block1setup = drive.trajectoryBuilder(splineLeft.end())
                 .lineToConstantHeading(new Vector2d(36, -14))
                 .splineToConstantHeading(new Vector2d(47.5, -14), Math.toRadians(270))
                 .build();
@@ -126,7 +132,8 @@ public class rightAutoRed extends LinearOpMode {
 //        sleep(1000);
         scoreSpecimen();
         wrist.setPosition(0.3039);
-        drive.followTrajectory(traj2);
+//        drive.followTrajectory(traj2);
+        drive.followTrajectory(splineLeft);
 //        drive.followTrajectory(traj3);
 ////        drive.turn(Math.toRadians(180 - 1e-10));
 //        drive.followTrajectory(traj4);
@@ -139,6 +146,8 @@ public class rightAutoRed extends LinearOpMode {
         drive.followTrajectory(traj9);
         drive.followTrajectory(traj10);
         drive.followTrajectory(traj11);
+
+        PoseStorage.currentPose = drive.getPoseEstimate();
     }
 
     public void scoreSpecimen(){
@@ -153,7 +162,7 @@ public class rightAutoRed extends LinearOpMode {
 
         rotate1.setTargetPosition(-465);
         rotate2.setTargetPosition(-440);
-        armUp.setTargetPosition(165);
+        armUp.setTargetPosition(155);
 
         rotate1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rotate2.setMode(DcMotor.RunMode.RUN_TO_POSITION);

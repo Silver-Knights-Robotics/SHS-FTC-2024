@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDriveCancelable;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 /*
  * Op mode for preliminary tuning of the follower PID coefficients (located in the drive base
@@ -27,7 +27,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
  */
 @Config
 @Autonomous(group = "test_auto")
-public class rightAuto extends LinearOpMode {
+public class leftAutoBlue_ALTERNATE extends LinearOpMode {
     public static double DISTANCE = 96; // in
     private DcMotor rotate1 = null;
     private DcMotor rotate2 = null;
@@ -39,7 +39,7 @@ public class rightAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         SampleMecanumDriveCancelable drive = new SampleMecanumDriveCancelable(hardwareMap);
 
-        Pose2d startPose = new Pose2d(-24, 65, Math.toRadians(180));
+        Pose2d startPose = new Pose2d(24, 65, Math.toRadians(180));
 
         drive.setPoseEstimate(startPose);
 
@@ -62,19 +62,24 @@ public class rightAuto extends LinearOpMode {
         rotate2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         claw.setPosition(0.9289);
-        wrist.setPosition(0.3039);
+        wrist.setPosition(0.2956);
 
         Trajectory traj1 = drive.trajectoryBuilder(startPose)
-                .lineToLinearHeading(new Pose2d(-6.5, 33.5, Math.toRadians(90)))
+                .lineToLinearHeading(new Pose2d(6.5, 33.5, Math.toRadians(90)))
                 .build();
 
         Trajectory traj2 = drive.trajectoryBuilder(traj1.end())
                 .strafeLeft(31)
                 .build();
 
+        Trajectory splineRight = drive.trajectoryBuilder(traj1.end())
+                .splineToConstantHeading(new Vector2d(37.5, 36), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(37.5, 33.5), Math.toRadians(270))
+                .build();
+
         Trajectory block1setup = drive.trajectoryBuilder(traj2.end())
-                .lineToConstantHeading(new Vector2d(-36, 16))
-                .splineToConstantHeading(new Vector2d(-48, 16), Math.toRadians(90))
+                .lineToConstantHeading(new Vector2d(-35.5, 12))
+                .splineToConstantHeading(new Vector2d(-45.5, 12), Math.toRadians(90))
                 .build();
 
 //        Trajectory traj3 = drive.trajectoryBuilder(traj2.end())
@@ -99,8 +104,8 @@ public class rightAuto extends LinearOpMode {
 //                .build();
 
         Trajectory block2setup = drive.trajectoryBuilder(traj5.end())
-                .lineToConstantHeading(new Vector2d(-50, 14))
-                .splineToConstantHeading(new Vector2d(-58, 14), Math.toRadians(90))
+                .lineToConstantHeading(new Vector2d(-47.5, 10))
+                .splineToConstantHeading(new Vector2d(-55.5, 10), Math.toRadians(90))
                 .build();
 
         Trajectory traj8 = drive.trajectoryBuilder(block2setup.end())
@@ -112,7 +117,7 @@ public class rightAuto extends LinearOpMode {
                 .build();
 
         Trajectory traj10 = drive.trajectoryBuilder(traj9.end())
-                .strafeLeft(8)
+                .strafeLeft(9)
                 .build();
 
         Trajectory traj11 = drive.trajectoryBuilder(traj10.end())
@@ -126,20 +131,23 @@ public class rightAuto extends LinearOpMode {
         drive.followTrajectory(traj1);
 //        sleep(1000);
         scoreSpecimen();
-        wrist.setPosition(0.3039);
-        drive.followTrajectory(traj2);
-//        drive.followTrajectory(traj3);
-////        drive.turn(Math.toRadians(180 - 1e-10));
-//        drive.followTrajectory(traj4);
-        drive.followTrajectory(block1setup);
-        drive.followTrajectory(traj5);
-//        drive.followTrajectory(traj6);
-//        drive.followTrajectory(traj7);
-        drive.followTrajectory(block2setup);
-        drive.followTrajectory(traj8);
-        drive.followTrajectory(traj9);
-        drive.followTrajectory(traj10);
-        drive.followTrajectory(traj11);
+        drive.followTrajectory(splineRight);
+//        wrist.setPosition(0.3039);
+//        drive.followTrajectory(traj2);
+////        drive.followTrajectory(traj3);
+//////        drive.turn(Math.toRadians(180 - 1e-10));
+////        drive.followTrajectory(traj4);
+//        drive.followTrajectory(block1setup);
+//        drive.followTrajectory(traj5);
+////        drive.followTrajectory(traj6);
+////        drive.followTrajectory(traj7);
+//        drive.followTrajectory(block2setup);
+//        drive.followTrajectory(traj8);
+//        drive.followTrajectory(traj9);
+//        drive.followTrajectory(traj10);
+//        drive.followTrajectory(traj11);
+
+        PoseStorage.currentPose = drive.getPoseEstimate();
     }
 
     public void scoreSpecimen(){
@@ -154,7 +162,7 @@ public class rightAuto extends LinearOpMode {
 
         rotate1.setTargetPosition(-465);
         rotate2.setTargetPosition(-440);
-        armUp.setTargetPosition(165);
+        armUp.setTargetPosition(155);
 
         rotate1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rotate2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -185,7 +193,7 @@ public class rightAuto extends LinearOpMode {
         telemetry.addData("runtime", getRuntime());
         telemetry.update();
 
-        while (opModeIsActive() && getRuntime()<3.7){
+        while (opModeIsActive() && getRuntime()<3.65){
             telemetry.addLine("waiting");
             telemetry.update();
         }

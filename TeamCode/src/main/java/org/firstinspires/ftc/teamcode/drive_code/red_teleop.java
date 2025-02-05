@@ -30,7 +30,6 @@
 package org.firstinspires.ftc.teamcode.drive_code;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -38,6 +37,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDriveCancelable;
 
 /*
@@ -70,7 +70,7 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDriveCancelable;
 
 @TeleOp(name="Basic: Omni Linear OpMode", group="Linear OpMode")
 //@Disabled
-public class basic_drive_code extends LinearOpMode {
+public class red_teleop extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -147,16 +147,16 @@ public class basic_drive_code extends LinearOpMode {
         // ROAD RUNNER THINGS HERE
         SampleMecanumDriveCancelable drive = new SampleMecanumDriveCancelable(hardwareMap);
 
-        drive.setPoseEstimate(new Pose2d(-24, 64, Math.toRadians(270)));
+        drive.setPoseEstimate(PoseStorage.currentPose);
 
 //        startingWristPosition();
-        wrist.setPosition(0.5);
+//        wrist.setPosition(0.5);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-//        Pose2d specimenPose = new Pose2d(-47, 54, Math.toRadians(90));
+        Pose2d specimenPose = new Pose2d(47, -54, Math.toRadians(270));
 
         waitForStart();
         runtime.reset();
@@ -168,14 +168,14 @@ public class basic_drive_code extends LinearOpMode {
 
             //ROAD RUNNER
 
-            if(gamepad1.a){
-                specimenPose = drive.getPoseEstimate();
-                newPose = true;
-            }
-            else
-                if (!newPose) {
-                specimenPose = new Pose2d(-47, 54, Math.toRadians(90));
-            }
+//            if(gamepad1.a){
+//                specimenPose = drive.getPoseEstimate();
+//                newPose = true;
+//            }
+//            else
+//                if (!newPose) {
+//                specimenPose = new Pose2d(-47, 54, Math.toRadians(90));
+//            }
 
             telemetry.addData("Specimen Pose", specimenPose);
 
@@ -247,6 +247,10 @@ public class basic_drive_code extends LinearOpMode {
             if (gamepad2.x) {
                 claw.setPosition(0.5006);
             }
+
+            if (gamepad2.right_trigger != 0){
+                scoreSpecimen();
+            }
 //
 ////                button = 0;
 //                if (open && claw.getPosition() == 0.5006){
@@ -302,5 +306,46 @@ public class basic_drive_code extends LinearOpMode {
     }
     public void startingWristPosition(){
         wrist.setPosition(1);
+    }
+    public void scoreSpecimen() {
+
+        resetRuntime();
+
+        wrist.setPosition(0.4);
+
+        rotate1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rotate2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armUp.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        rotate1.setTargetPosition(-465);
+        rotate2.setTargetPosition(-440);
+        armUp.setTargetPosition(155);
+
+        rotate1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rotate2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armUp.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        // Add power to the arms in order for them to move!!!!
+
+        rotate1.setPower(0.2);
+        rotate2.setPower(0.2);
+        armUp.setPower(0.2);
+
+        while (opModeIsActive() && rotate1.isBusy() && rotate2.isBusy()) {
+            telemetry.addLine("Rotating arm");
+            telemetry.update();
+        }
+
+        rotate1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rotate2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        armUp.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        rotate1.setDirection(DcMotor.Direction.FORWARD);
+        rotate2.setDirection(DcMotor.Direction.REVERSE);
+        armUp.setDirection(DcMotor.Direction.FORWARD);
+
+        rotate1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rotate2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armUp.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 }

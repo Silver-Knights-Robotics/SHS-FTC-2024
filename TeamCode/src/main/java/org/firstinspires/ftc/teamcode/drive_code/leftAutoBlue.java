@@ -27,7 +27,7 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDriveCancelable;
  */
 @Config
 @Autonomous(group = "test_auto")
-public class leftAutoRed extends LinearOpMode {
+public class leftAutoBlue extends LinearOpMode {
     public static double DISTANCE = 96; // in
     private DcMotor rotate1 = null;
     private DcMotor rotate2 = null;
@@ -39,7 +39,7 @@ public class leftAutoRed extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         SampleMecanumDriveCancelable drive = new SampleMecanumDriveCancelable(hardwareMap);
 
-        Pose2d startPose = new Pose2d(-24, -65, Math.toRadians(0));
+        Pose2d startPose = new Pose2d(24, 65, Math.toRadians(180));
 
         drive.setPoseEstimate(startPose);
 
@@ -65,7 +65,7 @@ public class leftAutoRed extends LinearOpMode {
         wrist.setPosition(0.2956);
 
         Trajectory traj1 = drive.trajectoryBuilder(startPose)
-                .lineToLinearHeading(new Pose2d(6.5, -33.5, Math.toRadians(270)))
+                .lineToLinearHeading(new Pose2d(-6.5, 33.5, Math.toRadians(90)))
                 .build();
 
 //        Trajectory traj2 = drive.trajectoryBuilder(traj1.end())
@@ -73,13 +73,13 @@ public class leftAutoRed extends LinearOpMode {
 //                .build();
 
         Trajectory splineLeft = drive.trajectoryBuilder(traj1.end())
-                .splineToConstantHeading(new Vector2d(37.5, -36), Math.toRadians(270))
-                .splineToConstantHeading(new Vector2d(37.5, -33.5), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(-37.5, 36), Math.toRadians(270))
+                .splineToConstantHeading(new Vector2d(-37.5, 33.5), Math.toRadians(270))
                 .build();
 
         Trajectory block1setup = drive.trajectoryBuilder(splineLeft.end())
-                .lineToConstantHeading(new Vector2d(35.5, -12))
-                .splineToConstantHeading(new Vector2d(45.5, -12), Math.toRadians(270))
+                .lineToConstantHeading(new Vector2d(-35.5, 12))
+                .splineToConstantHeading(new Vector2d(-45.5, 12), Math.toRadians(90))
                 .build();
 
 //        Trajectory traj3 = drive.trajectoryBuilder(traj2.end())
@@ -104,8 +104,8 @@ public class leftAutoRed extends LinearOpMode {
 //                .build();
 
         Trajectory block2setup = drive.trajectoryBuilder(traj5.end())
-                .lineToConstantHeading(new Vector2d(47.5, -10))
-                .splineToConstantHeading(new Vector2d(55.5, -10), Math.toRadians(270))
+                .lineToConstantHeading(new Vector2d(-47.5, 10))
+                .splineToConstantHeading(new Vector2d(-55.5, 10), Math.toRadians(90))
                 .build();
 
         Trajectory traj8 = drive.trajectoryBuilder(block2setup.end())
@@ -117,7 +117,7 @@ public class leftAutoRed extends LinearOpMode {
                 .build();
 
         Trajectory traj10 = drive.trajectoryBuilder(traj9.end())
-                .strafeLeft(8)
+                .strafeLeft(9)
                 .build();
 
         Trajectory traj11 = drive.trajectoryBuilder(traj10.end())
@@ -132,6 +132,7 @@ public class leftAutoRed extends LinearOpMode {
 //        sleep(1000);
         scoreSpecimen();
         wrist.setPosition(0.3039);
+//        drive.followTrajectory(traj2);
         drive.followTrajectory(splineLeft);
 //        drive.followTrajectory(traj3);
 ////        drive.turn(Math.toRadians(180 - 1e-10));
@@ -192,7 +193,7 @@ public class leftAutoRed extends LinearOpMode {
         telemetry.addData("runtime", getRuntime());
         telemetry.update();
 
-        while (opModeIsActive() && getRuntime()<3.7){
+        while (opModeIsActive() && getRuntime()<3.65){
             telemetry.addLine("waiting");
             telemetry.update();
         }
