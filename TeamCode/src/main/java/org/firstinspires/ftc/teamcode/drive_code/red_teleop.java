@@ -68,7 +68,7 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDriveCancelable;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Omni Linear OpMode", group="Linear OpMode")
+@TeleOp(name="red_teleop", group="Linear OpMode")
 //@Disabled
 public class red_teleop extends LinearOpMode {
 

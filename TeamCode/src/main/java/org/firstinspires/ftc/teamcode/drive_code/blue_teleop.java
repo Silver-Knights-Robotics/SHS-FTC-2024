@@ -68,7 +68,7 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDriveCancelable;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Omni Linear OpMode", group="Linear OpMode")
+@TeleOp(name="blue_teleop", group="Linear OpMode")
 //@Disabled
 public class blue_teleop extends LinearOpMode {
 
@@ -167,14 +167,8 @@ public class blue_teleop extends LinearOpMode {
 //            Pose2d specimenPose;
 
             //ROAD RUNNER
-
             if(gamepad1.a){
-                specimenPose = drive.getPoseEstimate();
-                newPose = true;
-            }
-            else
-                if (!newPose) {
-                specimenPose = new Pose2d(-47, 54, Math.toRadians(90));
+                drive.setPoseEstimate(new Pose2d(-47.01, 54.01, Math.toRadians(90)));
             }
 
             telemetry.addData("Specimen Pose", specimenPose);
@@ -186,7 +180,9 @@ public class blue_teleop extends LinearOpMode {
 //                    .splineTo(new Vector2d(-46.5, 55), Math.toRadians(90))
                     .lineToLinearHeading(specimenPose)
                     //open the claw
-                    .addDisplacementMarker(() -> {claw.setPosition(0.5006);})
+                    .addDisplacementMarker(() -> {
+                        claw.setPosition(0.5006);
+                    })
                     .build();
 
             double max;
